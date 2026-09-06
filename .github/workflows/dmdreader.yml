@@ -38,7 +38,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        dmd: ['ppucdmd', 'ppucdmd2']
+        dmd: ['rp2040', 'rp2350']
 
     name: Build for ${{ matrix.dmd }}
 
@@ -72,17 +72,18 @@ jobs:
 
       - name: Build dmdreader
         run: |
+          VERSION="v${{ needs.version.outputs.tag }}"
           pio run -e ${{ matrix.dmd }}
-          cp .pio/build/${{ matrix.dmd }}/firmware.elf dmdreader-${{ matrix.dmd }}.elf
-          cp .pio/build/${{ matrix.dmd }}/firmware.uf2 dmdreader-${{ matrix.dmd }}.uf2
+          cp .pio/build/${{ matrix.dmd }}/firmware.elf dmdreader-${{ matrix.dmd }}-${VERSION}.elf
+          cp .pio/build/${{ matrix.dmd }}/firmware.uf2 dmdreader-${{ matrix.dmd }}-${VERSION}.uf2
 
       - name: Upload artifacts
         uses: actions/upload-artifact@v7
         with:
           name: dmdreader-${{ matrix.dmd }}
           path: |
-            dmdreader-${{ matrix.dmd }}.elf
-            dmdreader-${{ matrix.dmd }}.uf2
+            dmdreader-${{ matrix.dmd }}-v${{ needs.version.outputs.tag }}.elf
+            dmdreader-${{ matrix.dmd }}-v${{ needs.version.outputs.tag }}.uf2
             VERSION
             LICENSE
             README.md
@@ -96,10 +97,12 @@ jobs:
       - name: Package
         if: startsWith(github.ref, 'refs/tags/v')
         run: |
-            cd dmdreader-ppucdmd
-            zip ../dmdreader-ppucdmd.zip dmdreader-ppucdmd.elf dmdreader-ppucdmd.uf2 VERSION LICENSE README.md
-            cd ../dmdreader-ppucdmd2
-            zip ../dmdreader-ppucdmd2.zip dmdreader-ppucdmd2.elf dmdreader-ppucdmd2.uf2 VERSION LICENSE README.md
+            VERSION="v${{ needs.version.outputs.tag }}"
+
+            cd dmdreader-rp2040
+            zip ../dmdreader-rp2040-${VERSION}.zip dmdreader-rp2040-${VERSION}.elf dmdreader-rp2040-${VERSION}.uf2 VERSION LICENSE README.md
+            cd ../dmdreader-rp2350
+            zip ../dmdreader-rp2350-${VERSION}.zip dmdreader-rp2350-${VERSION}.elf dmdreader-rp2350-${VERSION}.uf2 VERSION LICENSE README.md
             cd ..
 
       - name: Release
@@ -108,5 +111,5 @@ jobs:
         with:
           draft: true
           files: |
-            dmdreader-ppucdmd.zip
-            dmdreader-ppucdmd2.zip
+            dmdreader-rp2040-v${{ needs.version.outputs.tag }}.zip
+            dmdreader-rp2350-v${{ needs.version.outputs.tag }}.zip
