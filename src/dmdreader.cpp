@@ -112,6 +112,7 @@ uint8_t *framebuf_to_send;
 uint8_t dummy_sniff_dst[1];
 uint32_t frame_crc = 0;
 uint32_t crc_previous_frame = 0;
+uint64_t detected_signals = 0;
 bool detected_0_1_0_1 = false;
 bool detected_1_0_0_0 = false;
 bool locked_in = false;
@@ -330,10 +331,10 @@ uint64_t read_clock_count() {
 
 DmdType detect_dmd() {
 
-  uint64_t signals = read_clock_count();
-  uint32_t dotclk = signals >> 32;
-  uint16_t rclk = signals >> 16; // never exceeds 25000
-  uint16_t rdata = signals; // never exceeds 600
+  detected_signals = read_clock_count();
+  uint32_t dotclk = detected_signals >> 32;
+  uint16_t rclk = detected_signals >> 16; // never exceeds 25000
+  uint16_t rdata = detected_signals; // never exceeds 600
 
   // By checking DOTCLK, RCLK and RDATA we can identify system types
   // All values are based on a 1000ms sample of data
@@ -1654,3 +1655,4 @@ uint8_t *dmdreader_loopback_render() {
 
 uint16_t dmdreader_get_source_width() { return source_width; }
 uint16_t dmdreader_get_source_height() { return source_height; }
+uint64_t dmdreader_get_detected_signals() {return detected_signals; }
